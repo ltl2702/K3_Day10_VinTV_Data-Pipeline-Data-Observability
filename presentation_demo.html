@@ -408,15 +408,13 @@
       <button class="active" data-state="baseline" type="button">Baseline</button>
       <button data-state="corrupted" type="button">Corrupted</button>
       <button data-state="repaired" type="button">Repaired</button>
-      <label class="file-button" for="fileInput">Load raw JSON</label>
-      <input id="fileInput" type="file" accept=".json,application/json">
     </div>
   </header>
 
   <main>
     <div class="status">
       <span id="statusDot" class="dot"></span>
-      <span id="statusText">Đang đọc data/raw/crossref_records.json...</span>
+      <span id="statusText">Đang đọc dataset baseline / corrupted / repaired...</span>
     </div>
 
     <section class="flow" aria-label="Pipeline handoff">
@@ -506,6 +504,9 @@
   <script>
     const PATHS = {
       raw: "data/raw/crossref_records.json",
+      baselineData: "data/clean/papers_clean.json",
+      corruptedData: "data/clean/papers_clean_corrupted.json",
+      repairedData: "data/clean/papers_clean_repaired.json",
       baselineMetrics: "data/results/baseline_metrics.json",
       corruptedMetrics: "data/results/corrupted_metrics.json",
       repairedMetrics: "data/results/repaired_metrics.json"
@@ -613,6 +614,12 @@
 
     function normalizeList(value) {
       if (Array.isArray(value)) return value.map(stripTags).filter(Boolean);
+      if (typeof value === "string" && value.trim().startsWith("[")) {
+        try {
+          const parsed = JSON.parse(value);
+          if (Array.isArray(parsed)) return parsed.map(stripTags).filter(Boolean);
+        } catch {}
+      }
       if (!value) return [];
       return [stripTags(value)].filter(Boolean);
     }
@@ -630,7 +637,8 @@
       const authors = normalizeList(record.authors);
       const categories = normalizeList(record.categories);
       const published = String(record.published || "").slice(0, 10);
-      const authorsJoined = authors.join(", ");
+      const authorsJoined = stripTags(record.authors_joined) || authors.join(", ");
+      const categoriesJoined = stripTags(record.categories_joined) || categories.join(", ");
       return {
         paper_id: String(record.paper_id || "").trim().toLowerCase(),
         title,
@@ -638,60 +646,23 @@
         authors,
         authors_joined: authorsJoined,
         categories,
-        categories_joined: categories.join(", "),
+        categories_joined: categoriesJoined,
         primary_category: stripTags(record.primary_category),
         published,
         updated: stripTags(record.updated),
-        age_days: daysSince(published),
+        age_days: record.age_days === 0 || record.age_days ? Number(record.age_days) : daysSince(published),
         abs_url: String(record.abs_url || ""),
         pdf_url: String(record.pdf_url || ""),
         comment: stripTags(record.comment),
-        summary_chars: summary.length,
-        text_for_embedding: `Title: ${title} | Authors: ${authorsJoined} | Summary: ${summary}`
+        summary_chars: record.summary_chars === 0 || record.summary_chars ? Number(record.summary_chars) : summary.length,
+        text_for_embedding: stripTags(record.text_for_embedding || record.content) || `Title: ${title} | Authors: ${authorsJoined} | Summary: ${summary}`
       };
     }
 
-    function buildBaseline(records) {
-      const seen = new Set();
+    function buildDataset(records) {
       return records
         .map(cleanRecord)
-        .filter((record) => record.paper_id && record.title && record.summary.length >= 100)
-        .filter((record) => {
-          if (seen.has(record.paper_id)) return false;
-          seen.add(record.paper_id);
-          return true;
-        })
         .sort((a, b) => String(b.published).localeCompare(String(a.published)) || a.paper_id.localeCompare(b.paper_id));
-    }
-
-    function buildCorrupted(baseline) {
-      const corrupted = baseline.map((record) => ({ ...record, authors: [...record.authors], categories: [...record.categories] }));
-      if (!corrupted.length) return corrupted;
-      corrupted.shift();
-      if (corrupted[0]) {
-        corrupted[0].summary = "";
-        corrupted[0].summary_chars = 0;
-        corrupted[0].title = corrupted[0].title.slice(0, Math.max(12, Math.floor(corrupted[0].title.length / 2)));
-        corrupted[0].published = staleDate(corrupted[0].published);
-        corrupted[0].age_days = daysSince(corrupted[0].published);
-        corrupted[0].text_for_embedding = `Title: ${corrupted[0].title} | Authors: ${corrupted[0].authors_joined} | Summary: ${corrupted[0].summary}`;
-      }
-      if (corrupted[1]) {
-        corrupted[1].summary = `${corrupted[1].summary} ### NOISE_TOKEN RAG_RAG_RAG 000 ???`;
-        corrupted[1].summary_chars = corrupted[1].summary.length;
-        corrupted[1].text_for_embedding = `Title: ${corrupted[1].title} | Authors: ${corrupted[1].authors_joined} | Summary: ${corrupted[1].summary}`;
-      }
-      if (corrupted[2]) {
-        corrupted.push({ ...corrupted[2], corruption_note: "duplicate_row" });
-      }
-      return corrupted;
-    }
-
-    function staleDate(dateText) {
-      const date = new Date(`${dateText}T00:00:00Z`);
-      if (Number.isNaN(date.getTime())) return dateText;
-      date.setUTCFullYear(date.getUTCFullYear() - 1);
-      return date.toISOString().slice(0, 10);
     }
 
     function summarize(records) {
@@ -766,10 +737,10 @@
       const corrupted = summarize(app.states.corrupted);
       const repaired = summarize(app.states.repaired);
       rows.push(["Python requirement", "Needs 3.11-3.13"]);
-      rows.push(["Raw load smoke check", rawCount ? `PASS - ${rawCount} records` : "WAITING"]);
-      rows.push(["Clean demo result", `${baseline.rows} valid records, ${baseline.duplicateRows} duplicate IDs`]);
-      rows.push(["Corrupted demo result", `${corrupted.missingSummary} bad summaries, ${corrupted.duplicateRows} duplicates`]);
-      rows.push(["Repaired demo result", `${repaired.rows} records restored from raw-derived baseline`]);
+      rows.push(["Raw records artifact", rawCount ? `FOUND - ${rawCount} raw records` : "MISSING"]);
+      rows.push(["Baseline file result", `${baseline.rows} rows, ${baseline.duplicateRows} duplicate IDs`]);
+      rows.push(["Corrupted file result", `${corrupted.rows} rows, ${corrupted.missingSummary} bad summaries, ${corrupted.duplicateRows} duplicates`]);
+      rows.push(["Repaired file result", `${repaired.rows} rows, ${repaired.duplicateRows} duplicate IDs`]);
 
       app.artifactStatus.forEach((item) => {
         rows.push([item.label, item.exists ? "FOUND" : "MISSING"]);
@@ -912,13 +883,13 @@
       app.artifactStatus = checks;
     }
 
-    function setData(records, sourceLabel) {
-      app.raw = records;
-      app.states.baseline = buildBaseline(records);
-      app.states.corrupted = buildCorrupted(app.states.baseline);
-      app.states.repaired = app.states.baseline.map((record) => ({ ...record, authors: [...record.authors], categories: [...record.categories] }));
+    function setStateData(rawRecords, baselineRecords, corruptedRecords, repairedRecords, sourceLabel) {
+      app.raw = rawRecords || [];
+      app.states.baseline = buildDataset(baselineRecords || []);
+      app.states.corrupted = buildDataset(corruptedRecords || []);
+      app.states.repaired = buildDataset(repairedRecords || []);
       $("statusDot").className = "dot ready";
-      $("statusText").textContent = `${sourceLabel}: ${records.length} raw records loaded`;
+      $("statusText").textContent = `${sourceLabel}: baseline=${app.states.baseline.length}, corrupted=${app.states.corrupted.length}, repaired=${app.states.repaired.length}`;
       updateState(app.activeState);
     }
 
@@ -926,12 +897,17 @@
       try {
         await loadArtifactStatus();
         await loadMetrics();
-        const records = await loadJson(PATHS.raw);
-        setData(records, PATHS.raw);
+        const [rawRecords, baselineRecords, corruptedRecords, repairedRecords] = await Promise.all([
+          loadJson(PATHS.raw).catch(() => []),
+          loadJson(PATHS.baselineData),
+          loadJson(PATHS.corruptedData),
+          loadJson(PATHS.repairedData)
+        ]);
+        setStateData(rawRecords, baselineRecords, corruptedRecords, repairedRecords, "Loaded artifact files");
       } catch (error) {
-        setData(FALLBACK_RAW_RECORDS, "Embedded Crossref fallback");
-        $("statusDot").className = "dot ready";
-        $("statusText").textContent = "Đang dùng dữ liệu nhúng vì trình duyệt chưa đọc được data/raw/crossref_records.json. Mở bằng http://localhost:8000 để đọc đủ 24 records.";
+        $("statusDot").className = "dot error";
+        $("statusText").textContent = "Không đọc được clean/corrupted/repaired JSON. Mở bằng http://localhost:8000 và kiểm tra các file trong data/clean/.";
+        renderRunResults();
       }
     }
 
@@ -946,13 +922,6 @@
       if (!row) return;
       app.selectedId = row.dataset.id;
       renderRecords();
-    });
-
-    $("fileInput").addEventListener("change", async (event) => {
-      const file = event.target.files[0];
-      if (!file) return;
-      const text = await file.text();
-      setData(JSON.parse(text), file.name);
     });
 
     init();
