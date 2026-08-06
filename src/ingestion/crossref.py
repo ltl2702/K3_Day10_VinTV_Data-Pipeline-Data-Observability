@@ -150,9 +150,10 @@ def _comment(item: dict[str, Any]) -> str:
 def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
     """Parse a Crossref list response into the ingestion contract.
 
-    Records without a valid DOI or title are intentionally excluded. Duplicate
-    DOI records are preserved here so the cleaning stage can count and report
-    its deduplication decisions.
+    Records without a valid DOI, title, or summary are intentionally excluded.
+    Crossref normally stores the summary in ``abstract``; ``description`` is
+    accepted as a fallback. Duplicate DOI records are preserved here so the
+    cleaning stage can count and report its deduplication decisions.
     """
     if not isinstance(payload, dict):
         raise ValueError("Crossref payload must be a JSON object.")
@@ -169,7 +170,8 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
             continue
         paper_id = _normalize_doi(item.get("DOI"))
         title = _clean_text(item.get("title"))
-        if not paper_id or not title:
+        summary = _clean_text(item.get("abstract")) or _clean_text(item.get("description"))
+        if not paper_id or not title or not summary:
             continue
 
         categories = _categories(item)
@@ -178,7 +180,7 @@ def parse_crossref_payload(payload: dict) -> list[PaperRecord]:
             PaperRecord(
                 paper_id=paper_id,
                 title=title,
-                summary=_clean_text(item.get("abstract")),
+                summary=summary,
                 authors=_authors(item),
                 categories=categories,
                 primary_category=categories[0] if categories else "",
