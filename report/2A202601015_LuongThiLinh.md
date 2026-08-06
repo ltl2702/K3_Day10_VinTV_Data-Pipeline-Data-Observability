@@ -9,7 +9,7 @@
 | Khóa/Lớp | K3 |
 | Tên nhóm | VinTV |
 | Vai trò chính | Role 1 - Cấu hình, orchestration, release |
-| Branch phụ trách | `role1-orchestration-release` |
+| Branch phụ trách | `intergration` |
 | Repository | https://github.com/ltl2702/K3_Day10_VinTV_Data-Pipeline-Data-Observability |
 | Ngày hoàn thành | 06/08/2026 |
 
