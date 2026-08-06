@@ -5,8 +5,8 @@
 | Thông tin | Nội dung |
 | --- | --- |
 | Họ và tên | Phương |
-| Vai trò | phuong |
-| Branch | `role3-cleaning-corruption` |
+| Vai trò | Role 3 - Cleaning, Corruption và Repair |
+| Branch | `phuong` |
 | Phạm vi | Chuẩn hóa clean schema, tạo nhiễu có kiểm soát, phục hồi từ raw source |
 | Ngày báo cáo | 2026-08-06 |
 
