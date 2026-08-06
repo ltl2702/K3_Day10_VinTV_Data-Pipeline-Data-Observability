@@ -1,6 +1,6 @@
 # data/clean
 
-Owner: Role 3 - Phương.
+Owner: Role 3 - Cao Quế Phương.
 
 Artifact dự kiến:
 

@@ -1,6 +1,6 @@
 # Role 5 - Evaluation, Observability và Report
 
-Owner: Phượng
+Owner: Ngô Thị Ngọc Phượng
 Branch: `role5-eval-observability`
 
 ## Phạm vi

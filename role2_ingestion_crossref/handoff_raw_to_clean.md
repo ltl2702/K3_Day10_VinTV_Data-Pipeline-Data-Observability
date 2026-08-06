@@ -2,7 +2,7 @@
 
 Role 2 cập nhật file này trước khi bàn giao cho Role 3.
 
-Owner: Mai  
+Owner: Trần Thị Hoa Mai
 Branch hiện đang checkout: `mairule2`  
 Branch theo phân công: `role2-ingestion-crossref`
 

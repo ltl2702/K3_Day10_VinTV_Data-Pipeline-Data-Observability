@@ -1,6 +1,6 @@
 # data/embeddings
 
-Owner: Role 4 - Man.
+Owner: Role 4 - Phạm Mai Anh.
 
 Artifact dự kiến:
 

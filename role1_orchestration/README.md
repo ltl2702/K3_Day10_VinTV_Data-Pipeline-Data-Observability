@@ -1,6 +1,6 @@
 # Role 1 - Pipeline Orchestration & Release
 
-Owner: Bạn
+Owner: Lương Thị Linh
 Branch: `role1-orchestration-release`
 
 ## Phạm vi

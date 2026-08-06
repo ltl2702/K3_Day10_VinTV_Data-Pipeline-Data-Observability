@@ -6,11 +6,11 @@ Tài liệu này là contract làm việc chung cho 5 role. Mỗi role làm vi�
 
 | Role | Người phụ trách | Phạm vi | Branch đề xuất | Artifact/output chính |
 |---|---|---|---|---|
-| Role 1 | Bạn | Cấu hình, orchestration, release | `role1-orchestration-release` | Contract artifact, sơ đồ handoff, lệnh chạy, tiêu chí nghiệm thu |
-| Role 2 | Mai | Crossref ingestion + raw lineage | `role2-ingestion-crossref` | `src/ingestion/crossref.py`, `data/raw/` |
-| Role 3 | Phương | Cleaning schema, corruption, repair | `role3-cleaning-corruption` | `src/ingestion/cleaning.py`, `src/ingestion/corruption.py`, `data/clean/` |
-| Role 4 | Man | RAG, embedding, Chroma, agent | `role4-rag-agent-index` | `src/retrieval/`, `data/embeddings/`, `data/chroma/` |
-| Role 5 | Phượng | Evaluation, observability, report | `role5-eval-observability` | `src/evaluation/`, `src/observability/`, `data/results/`, `data/quality/`, `data/reports/` |
+| Role 1 | Lương Thị Linh | Cấu hình, orchestration, release | `role1-orchestration-release` | Contract artifact, sơ đồ handoff, lệnh chạy, tiêu chí nghiệm thu |
+| Role 2 | Trần Thị Hoa Mai | Crossref ingestion + raw lineage | `role2-ingestion-crossref` | `src/ingestion/crossref.py`, `data/raw/` |
+| Role 3 | Cao Quế Phương | Cleaning schema, corruption, repair | `role3-cleaning-corruption` | `src/ingestion/cleaning.py`, `src/ingestion/corruption.py`, `data/clean/` |
+| Role 4 | Phạm Mai Anh | RAG, embedding, Chroma, agent | `role4-rag-agent-index` | `src/retrieval/`, `data/embeddings/`, `data/chroma/` |
+| Role 5 | Ngô Thị Ngọc Phượng | Evaluation, observability, report | `role5-eval-observability` | `src/evaluation/`, `src/observability/`, `data/results/`, `data/quality/`, `data/reports/` |
 
 ## Quy tắc xuyên suốt
 

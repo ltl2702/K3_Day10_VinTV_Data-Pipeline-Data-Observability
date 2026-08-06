@@ -2,7 +2,7 @@
 
 Kết quả smoke test sau khi build index thật ngày 2026-08-06.
 
-Owner: Man
+Owner: Phạm Mai Anh
 Lệnh nạp index: `LocalEmbeddingIndex.load(settings=settings, embeddings_path=<manifest>)`
 
 ## Query 1: `agentic retrieval augmented generation for large language models`

@@ -2,7 +2,7 @@
 
 Role 4 cập nhật file này trước khi Role 5 chạy evaluation.
 
-Owner: Man
+Owner: Phạm Mai Anh
 Branch hiện đang checkout: `role4`
 Branch theo phân công: `role4-rag-agent-index`
 Ngày build index: 2026-08-06

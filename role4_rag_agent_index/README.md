@@ -1,6 +1,6 @@
 ﻿# Role 4 - RAG, Embedding, Chroma và Agent
 
-Owner: Man
+Owner: Phạm Mai Anh
 
 Branch theo phân công: `role4-rag-agent-index`
 

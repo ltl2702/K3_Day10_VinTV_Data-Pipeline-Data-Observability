@@ -1,6 +1,6 @@
 # data/results
 
-Owner: Role 5 - Phượng, với `corruption_log.json` từ Role 3.
+Owner: Role 5 - Ngô Thị Ngọc Phượng, với `corruption_log.json` từ Role 3.
 
 Artifact dự kiến:
 

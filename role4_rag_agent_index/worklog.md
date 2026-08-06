@@ -1,6 +1,6 @@
 ﻿# Worklog - Role 4
 
-Owner: Man
+Owner: Phạm Mai Anh
 
 Ngày thực hiện: 2026-08-06
 

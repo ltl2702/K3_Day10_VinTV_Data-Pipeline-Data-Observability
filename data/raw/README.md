@@ -1,6 +1,6 @@
 # data/raw
 
-Owner: Role 2 - Mai.
+Owner: Role 2 - Trần Thị Hoa Mai.
 
 Artifact dự kiến:
 

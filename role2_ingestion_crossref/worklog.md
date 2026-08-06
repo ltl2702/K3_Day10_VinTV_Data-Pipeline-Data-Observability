@@ -1,6 +1,6 @@
 # Worklog - Role 2
 
-Owner: Mai
+Owner: Trần Thị Hoa Mai
 
 Ngày thực hiện: 2026-08-06
 

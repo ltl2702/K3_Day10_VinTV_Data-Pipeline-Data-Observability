@@ -1,6 +1,6 @@
 # data/quality
 
-Owner: Role 5 - Phượng.
+Owner: Role 5 - Ngô Thị Ngọc Phượng.
 
 Artifact dự kiến:
 

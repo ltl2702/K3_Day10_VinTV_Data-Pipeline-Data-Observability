@@ -1,6 +1,6 @@
 # Role 2 - Crossref Ingestion và Raw Lineage
 
-Owner: Mai
+Owner: Trần Thị Hoa Mai
 
 Branch theo phân công: `role2-ingestion-crossref`
 

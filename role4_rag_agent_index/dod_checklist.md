@@ -1,6 +1,6 @@
 ﻿# DoD Checklist - Role 4
 
-Owner: Man
+Owner: Phạm Mai Anh
 
 Trạng thái: Hoàn thành và đã đối chiếu artifact ngày 2026-08-06.
 

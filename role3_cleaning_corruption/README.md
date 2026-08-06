@@ -1,6 +1,6 @@
 # Role 3 - Cleaning, Corruption và Repair
 
-Owner: Phương
+Owner: Cao Quế Phương
 Branch: `role3-cleaning-corruption`
 
 ## Phạm vi
