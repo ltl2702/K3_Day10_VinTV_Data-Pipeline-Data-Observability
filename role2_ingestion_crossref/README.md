@@ -1,7 +1,12 @@
 # Role 2 - Crossref Ingestion và Raw Lineage
 
 Owner: Mai
-Branch: `role2-ingestion-crossref`
+
+Branch theo phân công: `role2-ingestion-crossref`
+
+Branch hiện đang checkout: `mairule2`
+
+Trạng thái: Hoàn thành ingestion và raw lineage; chờ Role 3 nhận handoff.
 
 ## Phạm vi
 
