@@ -6,20 +6,20 @@
 
 | Thông tin         | Nội dung                  |
 | ------------------ | -------------------------- |
-| Khóa/Lớp         | [K3 hoặc K4]              |
-| Tên nhóm         | [Tên hoặc mã nhóm]     |
-| Repository         | [Đường dẫn repository] |
-| Ngày hoàn thành | [YYYY-MM-DD]               |
+| Khóa/Lớp         | K3              |
+| Tên nhóm         | VinTV     |
+| Repository         | https://github.com/ltl2702/K3_Day10_VinTV_Data-Pipeline-Data-Observability |
+| Ngày hoàn thành | [2026-08-06]               |
 
 ### Thành viên và phân công
 
-| STT | Họ và tên | MSSV | Vai trò chính | Module/deliverable sở hữu |
-| --: | --- | --- | --- | --- |
-| 1 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 2 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 3 | [Họ tên] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 4 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
-| 5 | [Nếu có] | [MSSV] | [Vai trò] | [File, hàm hoặc artifact] |
+| STT | Họ và tên | MSSV | Vai trò chính | Branch đề xuất | Module/deliverable sở hữu |
+| --: | --- | --- | --- | --- | --- |
+| 1 | Lương Thị Linh | 2A202601015 | Role 1 - Cấu hình, orchestration, release | `role1-orchestration-release` | Contract artifact, sơ đồ handoff, lệnh chạy, tiêu chí nghiệm thu; `src/core/`, `src/pipelines/`, `role1_orchestration/` |
+| 2 | Trần Thị Hoa Mai | 2A202601317 | Role 2 - Crossref ingestion + raw lineage | `role2-ingestion-crossref` | `src/ingestion/crossref.py`, `data/raw/`, raw snapshot, parsed records, raw lineage và handoff raw -> clean |
+| 3 | Cao Quế Phương | 2A202601111 | Role 3 - Cleaning schema, corruption, repair | `role3-cleaning-corruption` | `src/ingestion/cleaning.py`, `src/ingestion/corruption.py`, `data/clean/`, `data/results/corruption_log.json` |
+| 4 | Phạm Mai Anh | 2A202601681 | Role 4 - RAG, embedding, Chroma, agent | `role4-rag-agent-index` | `src/retrieval/`, `data/embeddings/`, `data/chroma/`, Chroma collections baseline/corrupted/repaired |
+| 5 | Ngô Thị Ngọc Phượng | 2A202601569 | Role 5 - Evaluation, observability, report | `role5-eval-observability` | `src/evaluation/`, `src/observability/`, `data/eval/`, `data/results/`, `data/quality/`, `data/reports/` |
 
 ## 2. Tóm tắt kết quả
 

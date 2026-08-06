@@ -1,5 +1,15 @@
 # Day 10 - Data Pipeline & Data Observability
 
+## Streamlit demo UI
+
+Sau khi cai dependency, mo dashboard demo bang lenh:
+
+```powershell
+streamlit run app.py
+```
+
+Dashboard doc artifact trong `data/` neu da co. Cac file pipeline chua hoan thien se hien trang thai `Pending` va co the bo sung sau.
+
 ## Mục tiêu bài lab
 
 Bài lab mô phỏng quy trình xây dựng và vận hành data pipeline cho một hệ thống RAG sử dụng dữ liệu bài báo học thuật từ Crossref.
