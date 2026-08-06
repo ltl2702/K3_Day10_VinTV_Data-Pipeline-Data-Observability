@@ -4,14 +4,14 @@
 
 | Thông tin | Nội dung |
 | --- | --- |
-| Họ và tên | TODO |
-| MSSV | TODO |
-| Khóa/Lớp | TODO |
-| Tên nhóm | TODO |
+| Họ và tên | Lương Thị Linh |
+| MSSV | 2A202601015 |
+| Khóa/Lớp | K3 |
+| Tên nhóm | VinTV |
 | Vai trò chính | Role 1 - Cấu hình, orchestration, release |
 | Branch phụ trách | `role1-orchestration-release` |
-| Repository | TODO |
-| Ngày hoàn thành | TODO |
+| Repository | https://github.com/ltl2702/K3_Day10_VinTV_Data-Pipeline-Data-Observability |
+| Ngày hoàn thành | 06/08/2026 |
 
 ## 2. Vai trò và phạm vi công việc
 
