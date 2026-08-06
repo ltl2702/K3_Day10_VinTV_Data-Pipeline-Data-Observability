@@ -1,0 +1,961 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VinTV Data Pipeline Demo</title>
+  <style>
+    :root {
+      --bg: #f7f8fa;
+      --ink: #17202a;
+      --muted: #667085;
+      --line: #d9dee7;
+      --panel: #ffffff;
+      --green: #197a56;
+      --red: #b42318;
+      --amber: #b54708;
+      --blue: #175cd3;
+      --shadow: 0 14px 34px rgba(23, 32, 42, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    header {
+      padding: 22px 28px 16px;
+      border-bottom: 1px solid var(--line);
+      background: #ffffff;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .toolbar {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 18px;
+    }
+
+    button, .file-button {
+      border: 1px solid var(--line);
+      background: #ffffff;
+      color: var(--ink);
+      border-radius: 8px;
+      min-height: 38px;
+      padding: 8px 12px;
+      font-weight: 650;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    button:hover, .file-button:hover { border-color: #a8b3c4; }
+
+    button.active {
+      color: #ffffff;
+      background: #1f2937;
+      border-color: #1f2937;
+    }
+
+    input[type="file"] { display: none; }
+
+    main {
+      padding: 22px 28px 36px;
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    .status {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--amber);
+    }
+
+    .dot.ready { background: var(--green); }
+    .dot.error { background: var(--red); }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.1fr 1.5fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-header {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .panel-title {
+      font-size: 16px;
+      font-weight: 760;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      padding: 4px 9px;
+      font-size: 12px;
+      font-weight: 760;
+      border: 1px solid transparent;
+      white-space: nowrap;
+    }
+
+    .baseline { color: var(--green); background: #eaf7f0; border-color: #b7e2cd; }
+    .corrupted { color: var(--red); background: #fff0ed; border-color: #ffd0c7; }
+    .repaired { color: var(--blue); background: #eef4ff; border-color: #c7d7fe; }
+    .missing { color: var(--amber); background: #fff7e8; border-color: #fedf89; }
+
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      padding: 14px;
+    }
+
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      min-height: 76px;
+      background: #fbfcfe;
+    }
+
+    .metric .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .metric .value {
+      margin-top: 8px;
+      font-size: 24px;
+      font-weight: 820;
+      line-height: 1;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(100px, 1fr));
+      gap: 8px;
+      margin-bottom: 18px;
+    }
+
+    .step {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      min-height: 72px;
+    }
+
+    .step strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .step span {
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+
+    .searchbar {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .searchbar input {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 8px 10px;
+      font-size: 14px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+      font-size: 13px;
+    }
+
+    th {
+      color: var(--muted);
+      font-size: 12px;
+      background: #fbfcfe;
+      position: sticky;
+      top: 0;
+    }
+
+    tr { cursor: pointer; }
+    tr:hover td { background: #f5f8ff; }
+    tr.selected td { background: #eaf1ff; }
+
+    .table-wrap {
+      max-height: 620px;
+      overflow: auto;
+    }
+
+    .title-cell {
+      width: 52%;
+      overflow-wrap: anywhere;
+    }
+
+    .summary-cell {
+      color: var(--muted);
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .detail {
+      padding: 16px;
+    }
+
+    .detail h2 {
+      margin: 0;
+      font-size: 20px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    .meta {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 12px 0 16px;
+    }
+
+    .meta span {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 9px;
+      color: var(--muted);
+      font-size: 12px;
+      background: #ffffff;
+    }
+
+    .detail-section {
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      padding-top: 14px;
+    }
+
+    .detail-section h3 {
+      margin: 0 0 8px;
+      font-size: 13px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .detail-section p {
+      margin: 0;
+      line-height: 1.55;
+      font-size: 14px;
+    }
+
+    .mono {
+      font-family: Consolas, Monaco, monospace;
+      font-size: 12px;
+      overflow-wrap: anywhere;
+      color: #344054;
+    }
+
+    .comparison {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .state-box {
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+
+    .state-box h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .state-box ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 13px;
+    }
+
+    .run-results {
+      display: grid;
+      grid-template-columns: 1.1fr 1fr;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+
+    .result-list {
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 9px;
+    }
+
+    .result-row {
+      display: grid;
+      grid-template-columns: minmax(150px, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 9px;
+      font-size: 13px;
+    }
+
+    .result-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .commands {
+      padding: 14px 16px 16px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .command {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfcfe;
+      padding: 11px;
+    }
+
+    .command code {
+      display: block;
+      color: #344054;
+      overflow-wrap: anywhere;
+    }
+
+    @media (max-width: 920px) {
+      header, main { padding-left: 16px; padding-right: 16px; }
+      .grid, .comparison, .run-results { grid-template-columns: 1fr; }
+      .flow { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>VinTV Data Pipeline: Baseline / Corrupted / Repaired</h1>
+    <div class="subtitle">Demo trình bày bằng artifact thật từ Crossref raw records và tự nhận metrics nếu file kết quả tồn tại.</div>
+    <div class="toolbar" role="tablist" aria-label="Pipeline state">
+      <button class="active" data-state="baseline" type="button">Baseline</button>
+      <button data-state="corrupted" type="button">Corrupted</button>
+      <button data-state="repaired" type="button">Repaired</button>
+      <label class="file-button" for="fileInput">Load raw JSON</label>
+      <input id="fileInput" type="file" accept=".json,application/json">
+    </div>
+  </header>
+
+  <main>
+    <div class="status">
+      <span id="statusDot" class="dot"></span>
+      <span id="statusText">Đang đọc data/raw/crossref_records.json...</span>
+    </div>
+
+    <section class="flow" aria-label="Pipeline handoff">
+      <div class="step"><strong>Raw</strong><span>data/raw/crossref_records.json</span></div>
+      <div class="step"><strong>Clean</strong><span>data/clean/papers_clean.json</span></div>
+      <div class="step"><strong>Index</strong><span>data/chroma + embeddings</span></div>
+      <div class="step"><strong>Evaluate</strong><span>data/results/*.json</span></div>
+      <div class="step"><strong>Report</strong><span>data/reports/*.md</span></div>
+    </section>
+
+    <section class="comparison" aria-label="State summary">
+      <div class="state-box">
+        <h3><span class="badge baseline">Baseline</span></h3>
+        <ul id="baselineBullets"></ul>
+      </div>
+      <div class="state-box">
+        <h3><span class="badge corrupted">Corrupted</span></h3>
+        <ul id="corruptedBullets"></ul>
+      </div>
+      <div class="state-box">
+        <h3><span class="badge repaired">Repaired</span></h3>
+        <ul id="repairedBullets"></ul>
+      </div>
+    </section>
+
+    <section class="run-results" aria-label="Run results">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Kết quả chạy / artifact thật</div>
+          <span id="runBadge" class="badge missing">checking</span>
+        </div>
+        <div class="result-list" id="runResults"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Lệnh verify khi thuyết trình</div>
+          <span class="badge baseline">Role 1</span>
+        </div>
+        <div class="commands">
+          <div class="command">
+            <code>py -3.12 -c "from ingestion.crossref import load_raw_records; ..."</code>
+          </div>
+          <div class="command">
+            <code>uv run python script/run_phase1.py</code>
+          </div>
+          <div class="command">
+            <code>uv run python script/run_corruption_flow.py</code>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid">
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title" id="stateTitle">Baseline dataset</div>
+          <span id="stateBadge" class="badge baseline">Baseline</span>
+        </div>
+        <div class="metrics" id="metrics"></div>
+        <div class="searchbar">
+          <input id="search" type="search" placeholder="Tìm theo title, author, paper_id...">
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="title-cell">Paper</th>
+                <th>Published</th>
+                <th>Freshness</th>
+              </tr>
+            </thead>
+            <tbody id="records"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <article class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Record detail</div>
+          <span id="artifactBadge" class="badge missing">raw artifact</span>
+        </div>
+        <div class="detail" id="detail"></div>
+      </article>
+    </section>
+  </main>
+
+  <script>
+    const PATHS = {
+      raw: "data/raw/crossref_records.json",
+      baselineMetrics: "data/results/baseline_metrics.json",
+      corruptedMetrics: "data/results/corrupted_metrics.json",
+      repairedMetrics: "data/results/repaired_metrics.json"
+    };
+
+    const FALLBACK_RAW_RECORDS = [
+      {
+        paper_id: "10.36227/techrxiv.177272838.89432844/v1",
+        title: "A Survey of (Deep RAG) Deep Retrieval Augmented Generation and Reasoning in Large Language Models",
+        summary: "Retrieval-Augmented Generation has emerged as a powerful paradigm for combining large language models with external knowledge sources to produce accurate, context-aware, and verifiable outputs. This survey focuses on Deep RAG systems that integrate reasoning, memory, query planning, information retrieval, answer generation, and practical optimization techniques for complex research workflows.",
+        authors: ["Lihui Liu"],
+        categories: [],
+        primary_category: "",
+        published: "2026-03-05",
+        updated: "2026-06-12T17:00:30Z",
+        abs_url: "https://doi.org/10.36227/techrxiv.177272838.89432844/v1",
+        pdf_url: "",
+        comment: "Institute of Electrical and Electronics Engineers (IEEE) | posted-content"
+      },
+      {
+        paper_id: "10.63646/kpqm1958",
+        title: "The Age of Autonomous Agents: A Bibliometric Review of Agentic AI Architectures, Applications, and Emerging Challenges",
+        summary: "The rapid evolution of large language models has catalyzed a shift from passive AI systems toward autonomous agentic architectures capable of reasoning, memory, tool use, and multi-agent collaboration. The review maps agentic AI research across healthcare, scientific discovery, education, software engineering, finance, and law while highlighting challenges around hallucination, trust, coordination, scalability, and governance.",
+        authors: ["Ben J. Weber", "Clara M. Hofmann", "Amara N. Okoye"],
+        categories: [],
+        primary_category: "",
+        published: "2026-06-30",
+        updated: "2026-07-17T02:04:13Z",
+        abs_url: "https://doi.org/10.63646/kpqm1958",
+        pdf_url: "https://inatgi.net/index.php/jaiaa/article/download/806/945",
+        comment: "Journal of AI Analytics and Applications | journal-article"
+      },
+      {
+        paper_id: "10.20944/preprints202604.0339.v1",
+        title: "Retrieval-Augmented Large Language Model Agents for Automated Scientific Literature Review Generation",
+        summary: "This study investigates a method that integrates retrieval-augmented mechanisms into large language model agents for scientific literature review generation. The approach combines semantic retrieval, document filtering, knowledge fusion, language modeling, task planning, memory storage, and reinforcement optimization to improve coverage, accuracy, and language quality in complex literature environments.",
+        authors: ["Ruotong Wang", "Nyutian Long", "Shunqi Liu", "Yuxi Wang", "Zhen Qi", "Huajun Zhang"],
+        categories: [],
+        primary_category: "",
+        published: "2026-04-06",
+        updated: "2026-07-30T14:22:32Z",
+        abs_url: "https://doi.org/10.20944/preprints202604.0339.v1",
+        pdf_url: "",
+        comment: "MDPI AG | posted-content"
+      },
+      {
+        paper_id: "10.3390/app16052244",
+        title: "Hybrid Retrieval-Augmented Generation: Semantic and Structural Integration for Large Language Model Reasoning",
+        summary: "Recent GraphRAG methods based on knowledge graphs often separate semantic relevance from structural reasoning paths. HybRAG proposes a hybrid retrieval framework that combines semantic node-level retrieval with structural path-level retrieval and retrieval-augmented fine-tuning to improve reasoning reliability, evidence quality, and scalability in complex knowledge graph question answering tasks.",
+        authors: ["Hyewon Lee", "Sungsu Lim"],
+        categories: [],
+        primary_category: "",
+        published: "2026-02-26",
+        updated: "2026-05-14T14:47:26Z",
+        abs_url: "https://doi.org/10.3390/app16052244",
+        pdf_url: "",
+        comment: "Applied Sciences | MDPI AG | journal-article"
+      },
+      {
+        paper_id: "10.55041/isjem07213",
+        title: "Speculative Retrieval-Augmented Generation for Cost-Efficient Large Language Model Inference",
+        summary: "This work focuses on high inference latency and expensive computation cost in Retrieval-Augmented Generation. The proposed speculative RAG framework combines hybrid dense and sparse retrieval with speculative decoding, lightweight re-ranking, and verifier-based token checking to improve latency and token efficiency while retaining accuracy on factoid tasks.",
+        authors: ["Dr. Sumalatha P", "Manoj Kumar"],
+        categories: [],
+        primary_category: "",
+        published: "2026-05-06",
+        updated: "2026-05-06T17:13:30Z",
+        abs_url: "https://doi.org/10.55041/isjem07213",
+        pdf_url: "",
+        comment: "International Scientific Journal of Engineering and Management | journal-article"
+      }
+    ];
+
+    const ARTIFACTS = [
+      ["Raw response", "data/raw/crossref_response.json"],
+      ["Raw records", "data/raw/crossref_records.json"],
+      ["Clean CSV", "data/clean/papers_clean.csv"],
+      ["Clean JSON", "data/clean/papers_clean.json"],
+      ["Baseline metrics", "data/results/baseline_metrics.json"],
+      ["Baseline answers", "data/results/baseline_answers.json"],
+      ["Corruption log", "data/results/corruption_log.json"],
+      ["Corrupted metrics", "data/results/corrupted_metrics.json"],
+      ["Repaired metrics", "data/results/repaired_metrics.json"],
+      ["Phase 1 report", "data/reports/phase1_report.md"],
+      ["Corruption report", "data/reports/corruption_report.md"]
+    ];
+
+    const app = {
+      raw: [],
+      states: { baseline: [], corrupted: [], repaired: [] },
+      metricsFiles: {},
+      artifactStatus: [],
+      activeState: "baseline",
+      selectedId: null
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function stripTags(value) {
+      return String(value || "")
+        .replace(/<[^>]*>/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    function normalizeList(value) {
+      if (Array.isArray(value)) return value.map(stripTags).filter(Boolean);
+      if (!value) return [];
+      return [stripTags(value)].filter(Boolean);
+    }
+
+    function daysSince(dateText) {
+      const date = new Date(`${dateText}T00:00:00Z`);
+      if (Number.isNaN(date.getTime())) return null;
+      const now = new Date();
+      return Math.max(0, Math.floor((now - date) / 86400000));
+    }
+
+    function cleanRecord(record) {
+      const title = stripTags(record.title);
+      const summary = stripTags(record.summary);
+      const authors = normalizeList(record.authors);
+      const categories = normalizeList(record.categories);
+      const published = String(record.published || "").slice(0, 10);
+      const authorsJoined = authors.join(", ");
+      return {
+        paper_id: String(record.paper_id || "").trim().toLowerCase(),
+        title,
+        summary,
+        authors,
+        authors_joined: authorsJoined,
+        categories,
+        categories_joined: categories.join(", "),
+        primary_category: stripTags(record.primary_category),
+        published,
+        updated: stripTags(record.updated),
+        age_days: daysSince(published),
+        abs_url: String(record.abs_url || ""),
+        pdf_url: String(record.pdf_url || ""),
+        comment: stripTags(record.comment),
+        summary_chars: summary.length,
+        text_for_embedding: `Title: ${title} | Authors: ${authorsJoined} | Summary: ${summary}`
+      };
+    }
+
+    function buildBaseline(records) {
+      const seen = new Set();
+      return records
+        .map(cleanRecord)
+        .filter((record) => record.paper_id && record.title && record.summary.length >= 100)
+        .filter((record) => {
+          if (seen.has(record.paper_id)) return false;
+          seen.add(record.paper_id);
+          return true;
+        })
+        .sort((a, b) => String(b.published).localeCompare(String(a.published)) || a.paper_id.localeCompare(b.paper_id));
+    }
+
+    function buildCorrupted(baseline) {
+      const corrupted = baseline.map((record) => ({ ...record, authors: [...record.authors], categories: [...record.categories] }));
+      if (!corrupted.length) return corrupted;
+      corrupted.shift();
+      if (corrupted[0]) {
+        corrupted[0].summary = "";
+        corrupted[0].summary_chars = 0;
+        corrupted[0].title = corrupted[0].title.slice(0, Math.max(12, Math.floor(corrupted[0].title.length / 2)));
+        corrupted[0].published = staleDate(corrupted[0].published);
+        corrupted[0].age_days = daysSince(corrupted[0].published);
+        corrupted[0].text_for_embedding = `Title: ${corrupted[0].title} | Authors: ${corrupted[0].authors_joined} | Summary: ${corrupted[0].summary}`;
+      }
+      if (corrupted[1]) {
+        corrupted[1].summary = `${corrupted[1].summary} ### NOISE_TOKEN RAG_RAG_RAG 000 ???`;
+        corrupted[1].summary_chars = corrupted[1].summary.length;
+        corrupted[1].text_for_embedding = `Title: ${corrupted[1].title} | Authors: ${corrupted[1].authors_joined} | Summary: ${corrupted[1].summary}`;
+      }
+      if (corrupted[2]) {
+        corrupted.push({ ...corrupted[2], corruption_note: "duplicate_row" });
+      }
+      return corrupted;
+    }
+
+    function staleDate(dateText) {
+      const date = new Date(`${dateText}T00:00:00Z`);
+      if (Number.isNaN(date.getTime())) return dateText;
+      date.setUTCFullYear(date.getUTCFullYear() - 1);
+      return date.toISOString().slice(0, 10);
+    }
+
+    function summarize(records) {
+      const ids = records.map((record) => record.paper_id);
+      const unique = new Set(ids);
+      const missingSummary = records.filter((record) => !record.summary || record.summary.length < 100).length;
+      const duplicateRows = records.length - unique.size;
+      const staleRows = records.filter((record) => Number.isFinite(record.age_days) && record.age_days > 180).length;
+      const avgSummary = records.length
+        ? Math.round(records.reduce((sum, record) => sum + (record.summary_chars || 0), 0) / records.length)
+        : 0;
+      return { rows: records.length, unique: unique.size, missingSummary, duplicateRows, staleRows, avgSummary };
+    }
+
+    function renderMetrics() {
+      const records = app.states[app.activeState];
+      const summary = summarize(records);
+      const metricsFile = app.metricsFiles[app.activeState];
+      const values = [
+        ["Rows", summary.rows],
+        ["Unique IDs", summary.unique],
+        ["Bad summary", summary.missingSummary],
+        ["Duplicates", summary.duplicateRows],
+        ["Stale >180d", summary.staleRows],
+        ["Avg summary chars", summary.avgSummary]
+      ];
+
+      if (metricsFile) {
+        ["retrieval_hit_rate", "mean_token_f1", "judge_accuracy", "mean_judge_score"].forEach((key) => {
+          if (metricsFile[key] !== undefined) values.unshift([key, formatMetric(metricsFile[key])]);
+        });
+      }
+
+      $("metrics").innerHTML = values.map(([label, value]) => `
+        <div class="metric">
+          <div class="label">${escapeHtml(label)}</div>
+          <div class="value">${escapeHtml(value)}</div>
+        </div>
+      `).join("");
+    }
+
+    function formatMetric(value) {
+      if (typeof value === "number") return Number.isInteger(value) ? value : value.toFixed(3);
+      return String(value);
+    }
+
+    function renderBullets() {
+      const base = summarize(app.states.baseline);
+      const corrupt = summarize(app.states.corrupted);
+      const repaired = summarize(app.states.repaired);
+      $("baselineBullets").innerHTML = bullets([
+        `${base.rows} clean records from Crossref raw`,
+        `${base.duplicateRows} duplicate paper_id after cleaning`,
+        `${base.missingSummary} summaries below quality threshold`
+      ]);
+      $("corruptedBullets").innerHTML = bullets([
+        `${corrupt.rows} records after simulated corruption`,
+        `${corrupt.missingSummary} bad summaries`,
+        `${corrupt.duplicateRows} duplicate paper_id`
+      ]);
+      $("repairedBullets").innerHTML = bullets([
+        `${repaired.rows} records restored from trusted raw`,
+        `${repaired.missingSummary} bad summaries`,
+        `Same clean contract as baseline`
+      ]);
+    }
+
+    function renderRunResults() {
+      const rows = [];
+      const rawCount = app.raw.length;
+      const baseline = summarize(app.states.baseline);
+      const corrupted = summarize(app.states.corrupted);
+      const repaired = summarize(app.states.repaired);
+      rows.push(["Python requirement", "Needs 3.11-3.13"]);
+      rows.push(["Raw load smoke check", rawCount ? `PASS - ${rawCount} records` : "WAITING"]);
+      rows.push(["Clean demo result", `${baseline.rows} valid records, ${baseline.duplicateRows} duplicate IDs`]);
+      rows.push(["Corrupted demo result", `${corrupted.missingSummary} bad summaries, ${corrupted.duplicateRows} duplicates`]);
+      rows.push(["Repaired demo result", `${repaired.rows} records restored from raw-derived baseline`]);
+
+      app.artifactStatus.forEach((item) => {
+        rows.push([item.label, item.exists ? "FOUND" : "MISSING"]);
+      });
+
+      const found = app.artifactStatus.filter((item) => item.exists).length;
+      const total = app.artifactStatus.length;
+      $("runBadge").textContent = `${found}/${total} artifacts`;
+      $("runBadge").className = `badge ${found === total ? "baseline" : "missing"}`;
+      $("runResults").innerHTML = rows.map(([label, value]) => {
+        const text = String(value);
+        const cls = text.includes("PASS") || text === "FOUND" ? "baseline" : text === "MISSING" ? "missing" : "repaired";
+        return `
+          <div class="result-row">
+            <span>${escapeHtml(label)}</span>
+            <span class="badge ${cls}">${escapeHtml(text)}</span>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function bullets(items) {
+      return items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
+    }
+
+    function renderRecords() {
+      const query = $("search").value.trim().toLowerCase();
+      const records = app.states[app.activeState].filter((record) => {
+        const haystack = `${record.paper_id} ${record.title} ${record.summary} ${record.authors_joined}`.toLowerCase();
+        return !query || haystack.includes(query);
+      });
+      const selected = app.selectedId || records[0]?.paper_id || null;
+      app.selectedId = selected;
+      $("records").innerHTML = records.map((record) => `
+        <tr data-id="${escapeHtml(record.paper_id)}" class="${record.paper_id === selected ? "selected" : ""}">
+          <td class="title-cell">
+            <strong>${escapeHtml(record.title || "(missing title)")}</strong>
+            <div class="summary-cell">${escapeHtml(record.summary || "(blank summary)")}</div>
+          </td>
+          <td>${escapeHtml(record.published || "n/a")}</td>
+          <td>${record.age_days === null ? "n/a" : `${record.age_days} days`}</td>
+        </tr>
+      `).join("");
+      renderDetail(records.find((record) => record.paper_id === selected) || records[0]);
+    }
+
+    function renderDetail(record) {
+      if (!record) {
+        $("detail").innerHTML = "<p>Không có record để hiển thị.</p>";
+        return;
+      }
+      $("detail").innerHTML = `
+        <h2>${escapeHtml(record.title || "(missing title)")}</h2>
+        <div class="meta">
+          <span>${escapeHtml(record.paper_id)}</span>
+          <span>${escapeHtml(record.published || "n/a")}</span>
+          <span>${record.age_days === null ? "n/a" : `${record.age_days} days old`}</span>
+          <span>${escapeHtml(record.primary_category || "no category")}</span>
+        </div>
+        <div class="detail-section">
+          <h3>Authors</h3>
+          <p>${escapeHtml(record.authors_joined || "n/a")}</p>
+        </div>
+        <div class="detail-section">
+          <h3>Summary</h3>
+          <p>${escapeHtml(record.summary || "(blank summary)")}</p>
+        </div>
+        <div class="detail-section">
+          <h3>Text for Embedding</h3>
+          <p class="mono">${escapeHtml(record.text_for_embedding || "")}</p>
+        </div>
+        <div class="detail-section">
+          <h3>Artifact Link</h3>
+          <p class="mono">${escapeHtml(record.abs_url || "n/a")}</p>
+        </div>
+      `;
+    }
+
+    function updateState(state) {
+      app.activeState = state;
+      app.selectedId = null;
+      document.querySelectorAll("button[data-state]").forEach((button) => {
+        button.classList.toggle("active", button.dataset.state === state);
+      });
+      $("stateTitle").textContent = `${titleCase(state)} dataset`;
+      $("stateBadge").className = `badge ${state}`;
+      $("stateBadge").textContent = titleCase(state);
+      $("artifactBadge").textContent = app.metricsFiles[state] ? "metrics artifact" : "raw-derived";
+      $("artifactBadge").className = `badge ${app.metricsFiles[state] ? state : "missing"}`;
+      renderMetrics();
+      renderBullets();
+      renderRunResults();
+      renderRecords();
+    }
+
+    function titleCase(value) {
+      return value.charAt(0).toUpperCase() + value.slice(1);
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    }
+
+    async function loadJson(path) {
+      const response = await fetch(path, { cache: "no-store" });
+      if (!response.ok) throw new Error(`${path}: ${response.status}`);
+      return response.json();
+    }
+
+    async function loadMetrics() {
+      const pairs = [
+        ["baseline", PATHS.baselineMetrics],
+        ["corrupted", PATHS.corruptedMetrics],
+        ["repaired", PATHS.repairedMetrics]
+      ];
+      for (const [state, path] of pairs) {
+        try {
+          app.metricsFiles[state] = await loadJson(path);
+        } catch {
+          app.metricsFiles[state] = null;
+        }
+      }
+    }
+
+    async function loadArtifactStatus() {
+      const checks = [];
+      for (const [label, path] of ARTIFACTS) {
+        try {
+          const response = await fetch(path, { method: "HEAD", cache: "no-store" });
+          checks.push({ label, path, exists: response.ok });
+        } catch {
+          checks.push({ label, path, exists: false });
+        }
+      }
+      app.artifactStatus = checks;
+    }
+
+    function setData(records, sourceLabel) {
+      app.raw = records;
+      app.states.baseline = buildBaseline(records);
+      app.states.corrupted = buildCorrupted(app.states.baseline);
+      app.states.repaired = app.states.baseline.map((record) => ({ ...record, authors: [...record.authors], categories: [...record.categories] }));
+      $("statusDot").className = "dot ready";
+      $("statusText").textContent = `${sourceLabel}: ${records.length} raw records loaded`;
+      updateState(app.activeState);
+    }
+
+    async function init() {
+      try {
+        await loadArtifactStatus();
+        await loadMetrics();
+        const records = await loadJson(PATHS.raw);
+        setData(records, PATHS.raw);
+      } catch (error) {
+        setData(FALLBACK_RAW_RECORDS, "Embedded Crossref fallback");
+        $("statusDot").className = "dot ready";
+        $("statusText").textContent = "Đang dùng dữ liệu nhúng vì trình duyệt chưa đọc được data/raw/crossref_records.json. Mở bằng http://localhost:8000 để đọc đủ 24 records.";
+      }
+    }
+
+    document.querySelectorAll("button[data-state]").forEach((button) => {
+      button.addEventListener("click", () => updateState(button.dataset.state));
+    });
+
+    $("search").addEventListener("input", renderRecords);
+
+    $("records").addEventListener("click", (event) => {
+      const row = event.target.closest("tr[data-id]");
+      if (!row) return;
+      app.selectedId = row.dataset.id;
+      renderRecords();
+    });
+
+    $("fileInput").addEventListener("change", async (event) => {
+      const file = event.target.files[0];
+      if (!file) return;
+      const text = await file.text();
+      setData(JSON.parse(text), file.name);
+    });
+
+    init();
+  </script>
+</body>
+</html>
